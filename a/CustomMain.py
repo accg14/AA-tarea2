@@ -19,15 +19,15 @@ def gain(set_entropy, dic, index):
     q1_size = len(q1_values)
     q1_entropy = entropy(dic[index].get('q1')[1])
 
-    q2_values = dic[i].get('q2')[0]
+    q2_values = dic[index].get('q2')[0]
     q2_size = len(q2_values)
     q2_entropy = entropy(dic[index].get('q2')[1])
 
-    q3_values = dic[i].get('q3')[0]
+    q3_values = dic[index].get('q3')[0]
     q3_size = len(q3_values)
     q3_entropy = entropy(dic[index].get('q3')[1])
 
-    q4_values = dic[i].get('q4')[0]
+    q4_values = dic[index].get('q4')[0]
     q4_size = len(q4_values)
     q4_entropy = entropy(dic[index].get('q4')[1])
 
@@ -35,7 +35,7 @@ def gain(set_entropy, dic, index):
     print("q2 entropy for " + str(index) + "attribute: " + str(q2_entropy) )
     print("q3 entropy for " + str(index) + "attribute: " + str(q3_entropy) )
     print("q4 entropy for " + str(index) + "attribute: " + str(q4_entropy) )
-    
+    #pdb.set_trace()
     total_gain = set_entropy - ((q1_size*q1_entropy)+(q2_size*q2_entropy)+(q3_size*q3_entropy)+(q4_size*q4_entropy))/9
     return total_gain
 
