@@ -2,33 +2,44 @@ import numpy, pdb
 
 def entropy(entry_values):
     total = sum(entry_values)
+    if total == 0:
+        return total
+    #if total == 0:
+    #pdb.set_trace()
     pi = list(map(lambda x: x/total, entry_values))
     ent = 0
     for p_i in pi:
-        ent += (-p_i)*numpy.log2(p_i)
+        if p_i > 0:
+            ent += (-p_i)*numpy.log2(p_i)
     return ent
 
 def gain(set_entropy, dic, index):
-        q1_values = dic[index][0]['q1']
-        q1_size = len(q1_values)
-        q1_entropy = entropy(dic[index][1]['q1'])
+    #pdb.set_trace()
+    q1_values = dic[index].get('q1')[0]
+    q1_size = len(q1_values)
+    q1_entropy = entropy(dic[index].get('q1')[1])
 
-        q2_values = dic[i][0]['q2']
-        q2_size = len(q2_values)
-        q2_entropy = entropy(dic[index][1]['q2'])
+    q2_values = dic[i].get('q2')[0]
+    q2_size = len(q2_values)
+    q2_entropy = entropy(dic[index].get('q2')[1])
 
-        q3_values = dic[i][0]['q3']
-        q3_size = len(q3_values)
-        q3_entropy = entropy(dic[index][1]['q3'])
+    q3_values = dic[i].get('q3')[0]
+    q3_size = len(q3_values)
+    q3_entropy = entropy(dic[index].get('q3')[1])
 
-        q4_values = dic[i][0]['q4']
-        q4_size = len(q4_values)
-        q4_entropy = entropy(dic[index][1]['q4'])
+    q4_values = dic[i].get('q4')[0]
+    q4_size = len(q4_values)
+    q4_entropy = entropy(dic[index].get('q4')[1])
 
-        total_gain = set_entropy - ((q1_size*q1_entropy)+(q2_size*q2_entropy)+(q3_size*q3_entropy)+(q4_size*q4_entropy))/150
-        return total_gain
+    print("q1 entropy for " + str(index) + "attribute: " + str(q1_entropy) )
+    print("q2 entropy for " + str(index) + "attribute: " + str(q2_entropy) )
+    print("q3 entropy for " + str(index) + "attribute: " + str(q3_entropy) )
+    print("q4 entropy for " + str(index) + "attribute: " + str(q4_entropy) )
+    
+    total_gain = set_entropy - ((q1_size*q1_entropy)+(q2_size*q2_entropy)+(q3_size*q3_entropy)+(q4_size*q4_entropy))/9
+    return total_gain
 
-def divide_data(sorted_attributes, file):
+def divide_data(sorted_attributes, file_name):
     main_return = []
     for i in range(0,len(sorted_attributes)):
         q1 = numpy.quantile(sorted_attributes[i], 0.25)
@@ -40,6 +51,8 @@ def divide_data(sorted_attributes, file):
         third_quarter = []
         fourth_quarter = []
         
+        #if i == 2:
+        #pdb.set_trace()
         for j in range(0,len(sorted_attributes[i])):
             if (sorted_attributes[i][j] < q1):
                 first_quarter.append(sorted_attributes[i][j])
@@ -54,10 +67,14 @@ def divide_data(sorted_attributes, file):
         second_flowers = [0,0,0]
         third_flowers = [0,0,0]
         fourth_flowers = [0,0,0]
-
-        for line in file:
+        #pdb.set_trace()
+        #print("BEFORE READ FILE")
+        f = open(file_name, 'r')
+        for line in f:
+            #print("READ FILE")
             values = line.split(',')
             values[len(values)-1] = values[len(values)-1].replace('\n','')
+            #pdb.set_trace()
             if (float(values[i]) < q1):
                 if (values[4] == "Iris-setosa"):
                     first_flowers[0] += 1
@@ -103,7 +120,7 @@ def divide_data(sorted_attributes, file):
 
  
 if __name__== "__main__":
-    f = open('data_set.txt', 'r')
+    f = open('data_set_test.txt', 'r')
     #columns = len(f.readline().split(',')) - 1
     
     p_i = [0,0,0]
@@ -120,22 +137,24 @@ if __name__== "__main__":
         else:
             p_i[2] += 1
         for i in range(0,4):
-            #print(i)
-            #print('before')
-            #print(each_column[i])
             each_column[i].append(float(values[i]))
-            #print('after: ')
-            #print(each_column[i])
 
     sorted_data = [[],[],[],[]]
     for i in range(0,4):
         sorted_data[i] = sorted(each_column[i]) 
-        #print(sorted_data[i])
+
+    dic_quantiles = divide_data(sorted_data,'data_set_test.txt')    
     set_entropy = entropy(p_i)
 
-    dic_quantiles = divide_data(sorted_data,f)
-
-
+    #pdb.set_trace()
+    fst_attr_gain = gain (set_entropy, dic_quantiles, 0)
+    print("first gain: " + str(fst_attr_gain))
+    snd_attr_gain = gain (set_entropy, dic_quantiles, 1)
+    print("second gain: " + str(snd_attr_gain))
+    thr_attr_gain = gain (set_entropy, dic_quantiles, 2)
+    print("third gain: " + str(thr_attr_gain))
+    fth_attr_gain = gain (set_entropy, dic_quantiles, 3)
+    print("forth gain: " + str(fth_attr_gain))
 
 
 
