@@ -146,18 +146,14 @@ if __name__== "__main__":
     dic_quantiles = divide_data(sorted_data,'data_set_test.txt')    
     set_entropy = entropy(p_i)
 
-    #pdb.set_trace()
+    gains = []
     fst_attr_gain = gain (set_entropy, dic_quantiles, 0)
-    print("first gain: " + str(fst_attr_gain))
+    gains.append(fst_attr_gain)
     snd_attr_gain = gain (set_entropy, dic_quantiles, 1)
-    print("second gain: " + str(snd_attr_gain))
+    gains.append(snd_attr_gain)
     thr_attr_gain = gain (set_entropy, dic_quantiles, 2)
-    print("third gain: " + str(thr_attr_gain))
+    gains.append(thr_attr_gain)
     fth_attr_gain = gain (set_entropy, dic_quantiles, 3)
-    print("forth gain: " + str(fth_attr_gain))
-
-
-
-
+    gains.append(fth_attr_gain)
 
 
