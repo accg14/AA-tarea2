@@ -1,14 +1,12 @@
 import numpy, pdb, random
 
 def entropy(entry_values):
-    #pdb.set_trace()
     sample_size = len(entry_values)
     total = sum(entry_values)
     if sample_size == 0:
         return sample_size
 
     pi = list(map(lambda x: x/total, entry_values))
-    #pdb.set_trace()
     ent = 0
     for p_i in pi:
         if p_i > 0:
@@ -19,7 +17,6 @@ def entropy(entry_values):
         return ent
 
 def gain(set_entropy, dic, index):
-    #pdb.set_trace()
     q1_values = dic[index].get('q1')[0]
     q1_size = len(q1_values)
     q1_entropy = entropy(dic[index].get('q1')[1])
@@ -40,7 +37,7 @@ def gain(set_entropy, dic, index):
     print("q2 entropy for " + str(index) + "attribute: " + str(q2_entropy) )
     print("q3 entropy for " + str(index) + "attribute: " + str(q3_entropy) )
     print("q4 entropy for " + str(index) + "attribute: " + str(q4_entropy) )
-    #pdb.set_trace()
+
     total_gain = set_entropy - ((q1_size*q1_entropy)+(q2_size*q2_entropy)+(q3_size*q3_entropy)+(q4_size*q4_entropy))/120
     return total_gain
 
@@ -56,8 +53,6 @@ def divide_data(sorted_attributes, file_name):
         third_quarter = []
         fourth_quarter = []
 
-        #if i == 2:
-        #pdb.set_trace()
         for j in range(0,len(sorted_attributes[i])):
             if (sorted_attributes[i][j] < q1):
                 first_quarter.append(sorted_attributes[i][j])
@@ -72,14 +67,12 @@ def divide_data(sorted_attributes, file_name):
         second_flowers = [0,0,0]
         third_flowers = [0,0,0]
         fourth_flowers = [0,0,0]
-        #pdb.set_trace()
-        #print("BEFORE READ FILE")
+
         f = open(file_name, 'r')
         for line in f:
-            #print("READ FILE")
             values = line.split(',')
             values[len(values)-1] = values[len(values)-1].replace('\n','')
-            #pdb.set_trace()
+
             if (float(values[i]) < q1):
                 if (values[4] == "Iris-setosa"):
                     first_flowers[0] += 1
@@ -126,11 +119,11 @@ def trainning_samples(a,b):
         x = random.randint(a,b)
         if not x in samples_id:
                 samples_id.append(x)
-    #pdb.set_trace()
+
     return samples_id
 
-
-if __name__== "__main__":
+def custom_main():
+#if __name__== "__main__":
     train_samples = trainning_samples(1, 50)
     train_samples += trainning_samples(51, 100)
     train_samples += trainning_samples(101,150)
@@ -157,7 +150,7 @@ if __name__== "__main__":
     for line in train_f:
         values = line.split(',')
         values[len(values)-1] = values[len(values)-1].replace('\n','')
-        #print(values)
+
         if (values[4] == 'Iris-setosa'):
             p_i[0] += 1
         elif (values[4] == 'Iris-versicolor'):
@@ -190,6 +183,6 @@ if __name__== "__main__":
     for i in gains:
         final_attr_order.append(gains.index(max(gains)))
         gains[gains.index(max(gains))] = -1
-    print(final_attr_order)
+    return final_attr_order
 
 
