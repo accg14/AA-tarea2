@@ -1,42 +1,68 @@
-{
-    nodo: {
-        label: string,
-        quantiles: float[],
-    }
-}
+import sys
 
-q5 = [['sepal lenght in cm', 0.25, 0.5, 0.75, 1]]
-elementos = [...]
+choices = [['A', 0.25, 0.5, 0.75, 1], ['B', 0.25, 0.5, 0.75, 1], ['C', 0.25, 0.5, 0.75, 1], ['D', 0.25, 0.5, 0.75, 1]]
+elements = [[0.1,0.5,0.1,0.1,'Iris-setosa'], [0.1,0.5,0.1,0.1,'Iris-setosa'], [0.1,0.5,0.1,0.1,'Iris-setosa'], [0.1,0.5,0.1,0.1,'Iris-setosa']]
 
-class node:
-    def __init__(self, level, elements):
-        self.flowers = ['','','']
-        if (level < 4):
-            self.label = q5[level][0]
-            self.childs = self.set_childs(level, elements)
-        else:
-            self.label = 
+class Node:
+	def __init__(self, level, elements):
+		if(level < 4):
+			self.is_leaf = False
+			self.label = choices[level][0]
+			self.childs = {}
+			self.set_childs(level, elements)
+		else:
+			self.is_leaf = True
+			self.value = elements
 
-    def set_childs(self, level, elements):
-        for i in range(1, 5):
-            new_elements = filter(lambda x : x[i] < q5[level][i], elements.copy())
+	def create_flowers_set(self):
+		return {'Iris-setosa':0, 'Iris-versicolor':0, 'Iris-virginica':0}
 
-            flowers = {
-                'Iris-setosa': 0,
-                'Iris-versicolor': 0,
-                'Iris-virginica': 0,
-            }
+	def is_leaf(self):
+		return self.is_leaf
 
-            for e in new_elements:
-                flowers[e[-1]] += 1
+	def get_value(self):
+		if (self.is_leaf):
+			return self.value
 
-            new_elements_lenght = len(new_elements)
+	def filter(self, flowers, elements, condition, level):
+		new_elements = []
+		for element in elements:
+			if(element[level] < condition):
+				new_elements.append(element)
+				flowers[element[-1]] += 1
+		return new_elements
 
-            for flower in flowers:
-                if (flower == new_elements_lenght)
-                    
-            if alguna_flor==len(new_elements)
-            self.child[q5[level][i]] = new Node(level + 1, new_elements)
+	def get_childs(self):
+		if not (self.is_leaf):
+			return self.childs
 
-    def filter()
+	def set_childs(self, level, elements):
+		for branch in range(1, 4):
+			new_elements = elements.copy()
+			flowers = self.create_flowers_set()
 
+			new_elements = self.filter(flowers, new_elements, choices[level][branch], level)
+
+			if(new_elements):
+				new_elements_lenght = len(new_elements)
+				flag = True
+				for flower in flowers:
+					if(flowers[flower] == new_elements_lenght):
+						self.childs[choices[level][branch]] = Node(5, flower)
+						flag = False
+						break
+				if (flag):
+					self.childs[choices[level][branch]] = Node(level + 1, new_elements)
+			else:
+				self.childs[choices[level][branch]] = Node(5, 'Iris-setosa')
+
+	def print_tree(self):
+		if(self.is_leaf):
+			print(str(self.value))
+		else:
+			for branch in self.childs:
+				self.childs[branch].print_tree()
+
+if __name__== "__main__":
+	Test = Node(int(sys.argv[1]), elements)
+	Test.print_tree()
