@@ -9,17 +9,24 @@ iris_versicolor = 'Iris-versicolor'
 iris_virginica = 'Iris-virginica'
 
 if __name__== "__main__":
-	attributes_order, quantiles = PreProcessingStep.custom_main()
+	attributes_order, quantiles = PreProcessingStep.custom_main(iris_setosa)
 	train_tuples = PreProcessingStep.data_order(attributes_order, train_set_file)
-
 	iris_setosa_tree = ID3Algorithm.init_ID3(quantiles, train_tuples, iris_setosa)
-	iris_versicolor_tree = ID3Algorithm.init_ID3(quantiles, train_tuples, iris_versicolor)
-	iris_virginica_tree = ID3Algorithm.init_ID3(quantiles, train_tuples, iris_virginica)
-
 	test_tuples = PreProcessingStep.data_order(attributes_order, test_set_file)
 	iris_setosa_result = ID3Algorithm.verify_tree(iris_setosa_tree, test_tuples, iris_setosa)
+
+	attributes_order, quantiles = PreProcessingStep.custom_main(iris_versicolor)
+	train_tuples = PreProcessingStep.data_order(attributes_order, train_set_file)
+	iris_versicolor_tree = ID3Algorithm.init_ID3(quantiles, train_tuples, iris_versicolor)
+	test_tuples = PreProcessingStep.data_order(attributes_order, test_set_file)
 	iris_versicolor_result = ID3Algorithm.verify_tree(iris_versicolor_tree, test_tuples, iris_versicolor)
+
+	attributes_order, quantiles = PreProcessingStep.custom_main(iris_virginica)
+	train_tuples = PreProcessingStep.data_order(attributes_order, train_set_file)
+	iris_virginica_tree = ID3Algorithm.init_ID3(quantiles, train_tuples, iris_virginica)
+	test_tuples = PreProcessingStep.data_order(attributes_order, test_set_file)
 	iris_virginica_result = ID3Algorithm.verify_tree(iris_virginica_tree, test_tuples, iris_virginica)
+
 	print('iris_setosa_result', str(iris_setosa_result))
 	print('iris_versicolor_result', str(iris_versicolor_result))
 	print('iris_virginica_result', str(iris_virginica_result))

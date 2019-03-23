@@ -120,7 +120,7 @@ def ID3(level, tuples, selected_flower):
 
 
 def verify_tree(tree, tuples, selected_flower):
-	#[True, False, Should be False, Should be True]
+	#[True, False, Should be True, Should be False]
 	result = [0, 0, 0, 0]
 	for tuple in tuples:
 		leaf_value = get_leaf_value(tree, tuple)
@@ -130,10 +130,10 @@ def verify_tree(tree, tuples, selected_flower):
 			else:
 				result[2] += 1
 		else:
-			if (selected_flower == tuple[-1]):
-				result[3] += 1
-			else:
+			if not (selected_flower == tuple[-1]):
 				result[1] += 1
+			else:
+				result[3] += 1
 	return result
 
 
