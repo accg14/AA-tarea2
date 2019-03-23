@@ -190,5 +190,3 @@ def custom_main():
         gains[gains.index(max(gains))] = -1
 
     return final_attr_ordered, final_quantil_ordered
-
-

@@ -5,11 +5,8 @@ max_level = 4
 
 pipe = '|'
 
-
-#TEMPORAL
-choices = [['A', 0.25, 0.5, 0.75, 1], ['B', 0.25, 0.5, 0.75, 1], ['C', 0.25, 0.5, 0.75, 1], ['D', 0.25, 0.5, 0.75, 1]]
-global_tuples = [[0.1,0.5,0.1,0.1,'Iris-setosa'],[0.1,0.1,0.4,0.1,'Iris-versicolor'],[0.1,0.1,0.4,0.1,'Iris-versicolor'],[0.1,0.8,0.4,0.5,'Iris-versicolor'],[0.4,0.5,0.4,0.1,'Iris-versicolor'],[0.4,0.1,0.1,0.1,'Iris-setosa'],[0.6,0.5,0.1,0.5,'Iris-setosa']]
-#TEMPORAL
+attributes = []
+global_tuples = []
 
 
 def create_flowers_set():
@@ -87,11 +84,11 @@ def ID3(level, tuples):
 		if (is_unique_flower):
 			return Node(True, flower)
 		else:
-			node = Node(False, choices[level][0])
+			node = Node(False, attributes[level][0])
 			childs = {}
 			for branch in range(1, 5):
-				filtered_tuples = filter(create_flowers_set(), tuples, choices, branch, level)
-				childs[choices[level][branch]] = ID3(level + 1, filtered_tuples)
+				filtered_tuples = filter(create_flowers_set(), tuples, attributes, branch, level)
+				childs[attributes[level][branch]] = ID3(level + 1, filtered_tuples)
 			node.set_childs(childs)
 			return node
 	else:
@@ -111,6 +108,12 @@ def print_tree(indentation, tree):
 			print_tree(indentation, childs[child])
 
 
-if __name__== "__main__":
+def init_ID3(Attributes, Global_Tuples):
+	global attributes
+	global global_tuples
+
+	attributes = Attributes
+	global_tuples = Global_Tuples
 	tree = ID3(0, global_tuples)
 	print_tree(pipe, tree)
+	return tree
