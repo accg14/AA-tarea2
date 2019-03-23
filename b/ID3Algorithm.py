@@ -85,7 +85,7 @@ def print_tree(indentation, tree):
 			print_tree(indentation, childs[child])
 
 
-def ID3(level, tuples):
+def ID3(level, tuples, selected_flower):
 	if (level < max_level and tuples):
 		is_unique_flower, flower = verify_uniqueness(create_flowers_set(), tuples)
 		if (is_unique_flower):
@@ -126,12 +126,12 @@ def cover_tree(tree, tuple):
 				return cover_tree(childs[child], tuple[1:])
 
 
-def init_ID3(Attributes, Global_Tuples):
+def init_ID3(Attributes, Global_Tuples, selected_flower):
 	global attributes
 	global global_tuples
 
 	attributes = Attributes
 	global_tuples = Global_Tuples
-	tree = ID3(0, global_tuples)
+	tree = ID3(0, global_tuples, selected_flower)
 	print_tree(pipe, tree)
 	return tree
