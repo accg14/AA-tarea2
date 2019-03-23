@@ -43,10 +43,14 @@ def gain(set_entropy, dic, index):
 
 def divide_data(sorted_attributes, file_name):
     main_return = []
+    quantils_array = []
     for i in range(0,len(sorted_attributes)):
         q1 = numpy.quantile(sorted_attributes[i], 0.25)
         q2 = numpy.quantile(sorted_attributes[i], 0.5)
         q3 = numpy.quantile(sorted_attributes[i], 0.75)
+        q4 = numpy.quantile(sorted_attributes[i], 1.0)
+
+        quantils_array.append([q1, q2, q3, q4])
 
         first_quarter = []
         second_quarter = []
@@ -111,7 +115,7 @@ def divide_data(sorted_attributes, file_name):
         }
 
         main_return.append(dic)
-    return main_return
+    return main_return, quantils_array
 
 def trainning_samples(a,b):
     samples_id = []
@@ -123,7 +127,6 @@ def trainning_samples(a,b):
     return samples_id
 
 def custom_main():
-#if __name__== "__main__":
     train_samples = trainning_samples(1, 50)
     train_samples += trainning_samples(51, 100)
     train_samples += trainning_samples(101,150)
@@ -164,7 +167,7 @@ def custom_main():
     for i in range(0,4):
         sorted_data[i] = sorted(each_column[i])
 
-    dic_quantiles = divide_data(sorted_data,'train_set.txt')
+    dic_quantiles, arr_quantiles = divide_data(sorted_data,'train_set.txt')
     set_entropy = entropy(p_i)
     print(set_entropy)
 
@@ -179,10 +182,13 @@ def custom_main():
     gains.append(fth_attr_gain)
     print(gains)
 
-    final_attr_order = []
+    final_attr_ordered = []
+    final_quantil_ordered = []
     for i in gains:
-        final_attr_order.append(gains.index(max(gains)))
+        final_quantil_ordered.append(arr_quantiles[gains.index(max(gains))])
+        final_attr_ordered.append(gains.index(max(gains)))
         gains[gains.index(max(gains))] = -1
-    return final_attr_order
+
+    return final_attr_ordered, final_quantil_ordered
 
 
