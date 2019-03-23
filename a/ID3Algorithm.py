@@ -1,12 +1,31 @@
-import sys
-
-min_level = 0
-max_level = 4
-
-pipe = '|'
+import sys, pdb
 
 attributes = []
 global_tuples = []
+min_level = 0
+max_level = 4
+pipe = '|'
+
+
+class Node:
+	def __init__(self, leaf, label):
+		self.leaf = leaf
+		self.label = label
+
+	def get_label(self):
+		return self.label
+
+	def is_leaf(self):
+		return self.leaf
+
+	def get_childs(self):
+		if not (self.leaf):
+			return self.childs
+		else:
+			return -1
+
+	def set_childs(self, childs):
+		self.childs = childs
 
 
 def create_flowers_set():
@@ -22,6 +41,7 @@ def verify_uniqueness(flowers_set, tuples):
 	for flower in flowers_set:
 		if (flowers_set[flower] == tuples_lenght):
 			return True, flower
+
 	return False, -1
 
 
@@ -35,6 +55,7 @@ def count_tuples(flowers_set, tuples):
 		if (max < flowers_set[flower]):
 			max = flowers_set[flower]
 			selected_flower = flower
+
 	return selected_flower
 
 
@@ -50,32 +71,18 @@ def filter(flowers, tuples, condition, branch, level):
 			if(condition[level][branch - 1] <= tuple[level] and tuple[level] < condition[level][branch]):
 				new_tuples.append(tuple)
 				flowers[tuple[-1]] += 1
+
 	return new_tuples
 
 
-class Node:
-	def __init__(self, is_leaf, label):
-		self.is_leaf = is_leaf
-		self.label = label
-
-
-	def get_label(self):
-		return self.label
-
-
-	def is_leaf(self):
-		return self.is_leaf
-
-
-	def get_childs(self):
-		if not (self.is_leaf):
-			return self.childs
-		else:
-			return -1
-
-
-	def set_childs(self, childs):
-		self.childs = childs
+def print_tree(indentation, tree):
+	printable = indentation + tree.get_label()
+	print(printable)
+	indentation += pipe
+	childs = tree.get_childs()
+	if (childs != -1):
+		for child in childs:
+			print_tree(indentation, childs[child])
 
 
 def ID3(level, tuples):
@@ -98,14 +105,26 @@ def ID3(level, tuples):
 			return Node(True, count_tuples(create_flowers_set(), global_tuples))
 
 
-def print_tree(indentation, tree):
-	printable = indentation + tree.get_label()
-	print(printable)
-	indentation += pipe
-	childs = tree.get_childs()
-	if (childs != -1):
+def verify_tree(tree, tuples):
+	result = [0, 0]
+	for tuple in tuples:
+		is_correct = cover_tree(tree, tuple)
+		if (is_correct):
+			result[0] += 1
+		else:
+			result[1] += 1
+	return result
+
+
+def cover_tree(tree, tuple):
+	if (tree.is_leaf()):
+		return tuple[-1] == tree.get_label()
+	else:
+		childs = tree.get_childs()
+		#pdb.set_trace()
 		for child in childs:
-			print_tree(indentation, childs[child])
+			if (tuple[0] < child):
+				return cover_tree(childs[child], tuple[1:])
 
 
 def init_ID3(Attributes, Global_Tuples):

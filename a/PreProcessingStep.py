@@ -1,5 +1,7 @@
 import numpy, pdb, random
 
+attributes_id = ['sepal_length', 'sepal_width', 'petal_length', 'petal_width']
+
 def entropy(entry_values):
     sample_size = len(entry_values)
     total = sum(entry_values)
@@ -50,7 +52,7 @@ def divide_data(sorted_attributes, file_name):
         q3 = numpy.quantile(sorted_attributes[i], 0.75)
         q4 = numpy.quantile(sorted_attributes[i], 1.0)
 
-        quantils_array.append([q1, q2, q3, q4])
+        quantils_array.append([attributes_id[i], q1, q2, q3, q4])
 
         first_quarter = []
         second_quarter = []
@@ -190,3 +192,17 @@ def custom_main():
         gains[gains.index(max(gains))] = -1
 
     return final_attr_ordered, final_quantil_ordered
+
+def data_order(attributes_order, file_name):
+    file = open(file_name, 'r')
+    ordered_data = []
+    for line in file:
+        split_line = line.split(',')
+        split_line[-1] = split_line[-1].replace('\n', '')
+        ordered_line = []
+        for index in attributes_order:
+            ordered_line.append(float(split_line[index]))
+        ordered_line.append(split_line[-1])
+        ordered_data.append(ordered_line)
+    file.close()
+    return ordered_data
