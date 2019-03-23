@@ -1,5 +1,5 @@
-a/__pycache__*
+*/__pycache__*
 
-a/test_set.txt
+*/test_set.txt
 
-a/train_set.txt
+*/train_set.txt

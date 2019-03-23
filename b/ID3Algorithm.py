@@ -8,12 +8,18 @@ pipe = '|'
 
 
 class Node:
-	def __init__(self, leaf, label):
+	def __init__(self, leaf, value):
 		self.leaf = leaf
-		self.label = label
+		if (leaf):
+			self.value = value
+		else:
+			self.label = value
 
-	def get_label(self):
-		return self.label
+	def get_value_or_label(self):
+		if (self.leaf):
+			return self.value
+		else:
+			return self.label
 
 	def is_leaf(self):
 		return self.leaf
@@ -76,7 +82,15 @@ def filter(flowers, tuples, condition, branch, level):
 
 
 def print_tree(indentation, tree):
-	printable = indentation + tree.get_label()
+	if (tree.is_leaf()):
+		node_value = tree.get_value_or_label()
+		if (node_value[0]):
+			printable = indentation + 'True with ' + str(node_value[1]) + ' percent accurancy'
+		else:
+			printable = indentation + 'False with ' + str(node_value[1]) + ' percent accurancy'
+	else:
+		printable = indentation + tree.get_value_or_label()
+
 	print(printable)
 	indentation += pipe
 	childs = tree.get_childs()
@@ -89,41 +103,48 @@ def ID3(level, tuples, selected_flower):
 	if (level < max_level and tuples):
 		is_unique_flower, flower = verify_uniqueness(create_flowers_set(), tuples)
 		if (is_unique_flower):
-			return Node(True, flower)
+			return Node(True, [selected_flower == flower, 60])
 		else:
 			node = Node(False, attributes[level][0])
 			childs = {}
 			for branch in range(1, 5):
 				filtered_tuples = filter(create_flowers_set(), tuples, attributes, branch, level)
-				childs[attributes[level][branch]] = ID3(level + 1, filtered_tuples)
+				childs[attributes[level][branch]] = ID3(level + 1, filtered_tuples, selected_flower)
 			node.set_childs(childs)
 			return node
 	else:
 		if (tuples):
-			return Node(True, count_tuples(create_flowers_set(), tuples))
+			return Node(True, [selected_flower == count_tuples(create_flowers_set(), tuples), 60])
 		else:
-			return Node(True, count_tuples(create_flowers_set(), global_tuples))
+			return Node(True, [selected_flower == count_tuples(create_flowers_set(), global_tuples), 60])
 
 
-def verify_tree(tree, tuples):
-	result = [0, 0]
+def verify_tree(tree, tuples, selected_flower):
+	#[True, False, Should be False, Should be True]
+	result = [0, 0, 0, 0]
 	for tuple in tuples:
-		is_correct = cover_tree(tree, tuple)
-		if (is_correct):
-			result[0] += 1
+		leaf_value = get_leaf_value(tree, tuple)
+		if (leaf_value):
+			if (selected_flower == tuple[-1]):
+				result[0] += 1
+			else:
+				result[2] += 1
 		else:
-			result[1] += 1
+			if (selected_flower == tuple[-1]):
+				result[3] += 1
+			else:
+				result[1] += 1
 	return result
 
 
-def cover_tree(tree, tuple):
+def get_leaf_value(tree, tuple):
 	if (tree.is_leaf()):
-		return tuple[-1] == tree.get_label()
+		return tree.get_value_or_label()[0]
 	else:
 		childs = tree.get_childs()
 		for child in childs:
 			if (tuple[0] < child):
-				return cover_tree(childs[child], tuple[1:])
+				return get_leaf_value(childs[child], tuple[1:])
 
 
 def init_ID3(Attributes, Global_Tuples, selected_flower):
