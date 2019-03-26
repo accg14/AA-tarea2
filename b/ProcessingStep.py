@@ -1,11 +1,10 @@
-import sys
+import sys, pdb
 
 attributes = []
 global_tuples = []
 min_level = 0
 max_level = 4
 pipe = '|'
-
 
 class Node:
 	def __init__(self, leaf, value):
@@ -103,7 +102,7 @@ def ID3(level, tuples, selected_flower):
 	if (level < max_level and tuples):
 		is_unique_flower, flower = verify_uniqueness(create_flowers_set(), tuples)
 		if (is_unique_flower):
-			return Node(True, [selected_flower == flower, 60])
+			return Node(True, [selected_flower == flower, 100])
 		else:
 			node = Node(False, attributes[level][0])
 			childs = {}
@@ -114,27 +113,18 @@ def ID3(level, tuples, selected_flower):
 			return node
 	else:
 		if (tuples):
+			pdb.set_trace()
+			#percent = 
 			return Node(True, [selected_flower == count_tuples(create_flowers_set(), tuples), 60])
 		else:
 			return Node(True, [selected_flower == count_tuples(create_flowers_set(), global_tuples), 60])
 
-
-def verify_tree(tree, tuples, selected_flower):
-	#[True, False, Should be True, Should be False]
-	result = [0, 0, 0, 0]
+def get_percent_value(flower, tuples):
+	total = 0
 	for tuple in tuples:
-		leaf_value = get_leaf_value(tree, tuple)
-		if (leaf_value):
-			if (selected_flower == tuple[-1]):
-				result[0] += 1
-			else:
-				result[2] += 1
-		else:
-			if not (selected_flower == tuple[-1]):
-				result[1] += 1
-			else:
-				result[3] += 1
-	return result
+		if (flower == tuple[-1]):
+			total += 1
+	return (int(total * (5 / 6) * 100)) 
 
 
 def get_leaf_value(tree, tuple):
