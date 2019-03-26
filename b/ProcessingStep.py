@@ -84,9 +84,9 @@ def print_tree(indentation, tree):
 	if (tree.is_leaf()):
 		node_value = tree.get_value_or_label()
 		if (node_value[0]):
-			printable = indentation + 'True with ' + str(node_value[1]) + ' percent accurancy'
+			printable = indentation + 'True -> ' + str(node_value[1]) + '%'
 		else:
-			printable = indentation + 'False with ' + str(node_value[1]) + ' percent accurancy'
+			printable = indentation + 'False -> ' + str(node_value[1]) + '%'
 	else:
 		printable = indentation + tree.get_value_or_label()
 
@@ -102,7 +102,7 @@ def ID3(level, tuples, selected_flower):
 	if (level < max_level and tuples):
 		is_unique_flower, flower = verify_uniqueness(create_flowers_set(), tuples)
 		if (is_unique_flower):
-			return Node(True, [selected_flower == flower, 100])
+			return Node(True, [selected_flower == flower, 100.0])
 		else:
 			node = Node(False, attributes[level][0])
 			childs = {}
@@ -113,18 +113,24 @@ def ID3(level, tuples, selected_flower):
 			return node
 	else:
 		if (tuples):
-			pdb.set_trace()
-			#percent = 
-			return Node(True, [selected_flower == count_tuples(create_flowers_set(), tuples), 60])
+			boolean_selected_flower = selected_flower == count_tuples(create_flowers_set(), tuples)
+			return Node(True, [boolean_selected_flower, get_percent_value(selected_flower, tuples, boolean_selected_flower)])
 		else:
-			return Node(True, [selected_flower == count_tuples(create_flowers_set(), global_tuples), 60])
+			boolean_selected_flower = selected_flower == count_tuples(create_flowers_set(), global_tuples)
+			return Node(True, [boolean_selected_flower, get_percent_value(selected_flower, global_tuples, boolean_selected_flower)])
 
-def get_percent_value(flower, tuples):
+
+def get_percent_value(flower, tuples, is_selected_flower):
 	total = 0
-	for tuple in tuples:
-		if (flower == tuple[-1]):
-			total += 1
-	return (int(total * (5 / 6) * 100)) 
+	if (is_selected_flower):
+		for tuple in tuples:
+			if (flower == tuple[-1]):
+				total += 1
+	else:
+		for tuple in tuples:
+			if not (flower == tuple[-1]):
+				total += 1
+	return round(total * 100 / len(tuples), 1)
 
 
 def get_leaf_value(tree, tuple):
