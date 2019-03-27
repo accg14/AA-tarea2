@@ -1,7 +1,9 @@
 import numpy, pdb, random, os
 
-attributes_id = ['sepal_length', 'sepal_width', 'petal_length', 'petal_width']
-target_class = ''
+cont_attributes_id = ['elevation', 'aspect', 'slope', 'horizontal_distance_hydrology', 'vertical_distance_hydrology', 'horizontal_dist_roadways', 'hillshade_9am','hillshade_noon' , 'hillshade_3pm', 'horizontal_dist_f_points']
+train_tuples_per_class = 66400
+offset = 10
+
 
 def entropy(entry_values):
     #pdb.set_trace()
@@ -20,7 +22,7 @@ def entropy(entry_values):
     else:
         return ent
 
-def gain(set_entropy, dic, index):
+def continue_gain(set_entropy, dic, index):
     q1_values = dic[index].get('q1')[0]
     q1_size = len(q1_values)
     q1_entropy = entropy(dic[index].get('q1')[1])
@@ -45,16 +47,48 @@ def gain(set_entropy, dic, index):
     total_gain = set_entropy - ((q1_size*q1_entropy)+(q2_size*q2_entropy)+(q3_size*q3_entropy)+(q4_size*q4_entropy))/120
     return total_gain
 
-def divide_data(sorted_attributes, file_name):
+def divide_binary_data(sorted_attributes, file_name):
+    #pdb.set_trace()
+
+    for i in range(0, len(sorted_attributes)):
+        zero_half = []
+        one_half = []
+
+        zero_soils = [0, 0, 0, 0, 0, 0, 0]
+        one_soils = [0, 0, 0, 0, 0, 0, 0]
+
+        f = open(file_name, 'r')
+        for line in f:
+            values = line.split(',')
+            values[-1] = values[-1].replace('\n','')
+
+            print(values[i + offset])
+
+            if (int(values[i + offset]) == 0):
+                zero_soils[int(values[-1]) -1] += 1
+            else:
+                one_soils[int(values[-1]) -1] += 1
+        f.close()
+        #pdb.set_trace()
+        binary_dic = {
+            '0' : zero_soils,
+            '1' : one_soils
+        }
+        #print(zero_soils)
+        #print(one_soils)
+
+
+def divide_continue_data(sorted_attributes, file_name):
     main_return = []
     quantils_array = []
-    for i in range(0,len(sorted_attributes)):
+    #pdb.set_trace()
+    for i in range(0, len(sorted_attributes)):
         q1 = numpy.quantile(sorted_attributes[i], 0.25)
         q2 = numpy.quantile(sorted_attributes[i], 0.5)
         q3 = numpy.quantile(sorted_attributes[i], 0.75)
         q4 = numpy.quantile(sorted_attributes[i], 1.0)
 
-        quantils_array.append([attributes_id[i], q1, q2, q3, q4])
+        quantils_array.append([cont_attributes_id[i], q1, q2, q3, q4])
 
         first_quarter = []
         second_quarter = []
@@ -71,10 +105,10 @@ def divide_data(sorted_attributes, file_name):
             else:
                 fourth_quarter.append(sorted_attributes[i][j])
 
-        first_flowers = [0,0]
-        second_flowers = [0,0]
-        third_flowers = [0,0]
-        fourth_flowers = [0,0]
+        first_soils = [0, 0, 0, 0, 0, 0, 0]
+        second_soils = [0, 0, 0, 0, 0, 0, 0]
+        third_soils = [0, 0, 0, 0, 0, 0, 0]
+        fourth_soils = [0, 0, 0, 0, 0, 0, 0]
 
         f = open(file_name, 'r')
         for line in f:
@@ -82,39 +116,29 @@ def divide_data(sorted_attributes, file_name):
             values[len(values)-1] = values[len(values)-1].replace('\n','')
 
             if (float(values[i]) < q1):
-                if (values[4] == target_class):
-                    first_flowers[0] += 1
-                else:
-                    first_flowers[1] += 1
+                first_soils[int(values[-1])] += 1
             elif(float(values[i]) < q2):
-                if (values[4] == target_class):
-                    second_flowers[0] += 1
-                else:
-                    second_flowers[1] += 1
+                second_soils[int(values[-1])] += 1
             elif(float(values[i]) < q3):
-                if (values[4] == target_class):
-                    third_flowers[0] += 1
-                else:
-                    third_flowers[1] += 1
+               third_soils[int(values[-1])] += 1
             else:
-                if (values[4] == target_class):
-                    fourth_flowers[0] += 1
-                else:
-                    fourth_flowers[1] += 1
+               fourth_soils[int(values[-1])] += 1
 
         dic = {
-            'q1' : [first_quarter, first_flowers],
-            'q2' : [second_quarter, second_flowers],
-            'q3' : [third_quarter, third_flowers],
-            'q4' : [fourth_quarter, fourth_flowers]
+            'q1' : [first_quarter, first_soils],
+            'q2' : [second_quarter, second_soils],
+            'q3' : [third_quarter, third_soils],
+            'q4' : [fourth_quarter, fourth_soils]
         }
 
         main_return.append(dic)
+    #pdb.set_trace()
     return main_return, quantils_array
 
 def trainning_samples(a,b):
     samples_id = []
-    while len(samples_id) < 40:
+    global train_tuples_per_class
+    while len(samples_id) < train_tuples_per_class:
         x = random.randint(a,b)
         if not x in samples_id:
                 samples_id.append(x)
@@ -122,17 +146,15 @@ def trainning_samples(a,b):
     return samples_id
 
 def custom_main():
-    #global target_class
-    #target_class = class_id
 
     if not (os.path.isfile('data/train_set.txt')):
-        f = open('data/data_set.txt', 'r')
+        f = open('data/covtype.data', 'r')
         train_samples = trainning_samples(1, 50)
         train_samples += trainning_samples(51, 100)
         train_samples += trainning_samples(101,150)
 
-        train_f = open('train_set.txt', 'a')
-        test_f = open('test_set.txt', 'a')
+        train_f = open('data/train_set.txt', 'a')
+        test_f = open('data/test_set.txt', 'a')
 
         i  = 1
         for line in f:
@@ -147,46 +169,57 @@ def custom_main():
         train_f.close()
 
     p_i = [0,0,0,0,0,0,0]
-    for i in range (0,54):
+    each_column = []
+    for i in range(0,55):
         each_column.append([])
     
-    train_f = open('train_set.txt', 'r')
-
+    train_f = open('data/train_set.txt', 'r')
+    
     for line in train_f:
         values = line.split(',')
-        values[len(values)-1] = values[len(values)-1].replace('\n','')
-        p_i[int(values[-1])-1] = int(values[-1]) #forest class
-        
-        for i in range(0,len(each_column)):
+        values[-1] = values[-1].replace('\n','')
+        p_i[int(values[-1])-1] += 1 #forest classes
+
+        for i in range(0, len(values)):
             each_column[i].append(int(values[i]))
+    
+    train_f.close()
 
     sorted_data = []
     for column in each_column:
         sorted_data.append(sorted(column))
-
-    dic_quantiles, arr_quantiles = divide_data(sorted_data,'train_set.txt')
+    #pdb.set_trace()
+    
     set_entropy = entropy(p_i)
     print(set_entropy)
+    
+    dic_quantiles, arr_quantiles = divide_continue_data(sorted_data[:10],'data/train_set.txt') #just quantitive attributes
 
-    gains = []
-    fst_attr_gain = gain (set_entropy, dic_quantiles, 0)
-    gains.append(fst_attr_gain)
-    snd_attr_gain = gain (set_entropy, dic_quantiles, 1)
-    gains.append(snd_attr_gain)
-    thr_attr_gain = gain (set_entropy, dic_quantiles, 2)
-    gains.append(thr_attr_gain)
-    fth_attr_gain = gain (set_entropy, dic_quantiles, 3)
-    gains.append(fth_attr_gain)
-    print(gains)
+    divide_binary_data(sorted_data[10:],'data/train_set.txt')  #just qualitative attributes
+    
 
-    final_attr_ordered = []
-    final_quantil_ordered = []
-    for i in gains:
-        final_quantil_ordered.append(arr_quantiles[gains.index(max(gains))])
-        final_attr_ordered.append(gains.index(max(gains)))
-        gains[gains.index(max(gains))] = -1
 
-    return final_attr_ordered, final_quantil_ordered
+    
+    
+    #gains = []
+    #fst_attr_gain = continue_gain(set_entropy, dic_quantiles, 0)
+    #gains.append(fst_attr_gain)
+    #snd_attr_gain = continue_gain(set_entropy, dic_quantiles, 1)
+    #gains.append(snd_attr_gain)
+    #thr_attr_gain = continue_gain(set_entropy, dic_quantiles, 2)
+    #gains.append(thr_attr_gain)
+    #fth_attr_gain = continue_gain(set_entropy, dic_quantiles, 3)
+    #gains.append(fth_attr_gain)
+    #print(gains)
+
+    #final_attr_ordered = []
+    #final_quantil_ordered = []
+    #for i in gains:
+    #    final_quantil_ordered.append(arr_quantiles[gains.index(max(gains))])
+    #    final_attr_ordered.append(gains.index(max(gains)))
+    #    gains[gains.index(max(gains))] = -1
+
+    #return final_attr_ordered, final_quantil_ordered
 
 def data_order(attributes_order, file_name):
     file = open(file_name, 'r')
