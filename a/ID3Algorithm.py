@@ -3,7 +3,7 @@ import sys
 attributes = []
 global_tuples = []
 min_level = 0
-max_level = 4
+max_level = 0
 pipe = '|'
 
 
@@ -129,9 +129,11 @@ def cover_tree(tree, tuple):
 def init_ID3(Attributes, Global_Tuples):
 	global attributes
 	global global_tuples
+	global max_level
 
 	attributes = Attributes
 	global_tuples = Global_Tuples
+	max_level = len(Attributes)
 	tree = ID3(0, global_tuples)
 	print_tree(pipe, tree)
 	return tree
