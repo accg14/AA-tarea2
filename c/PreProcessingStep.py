@@ -39,20 +39,19 @@ def continue_gain(set_entropy, dic, index):
     q4_size = len(q4_values)
     q4_entropy = entropy(dic[index].get('q4')[1])
 
-    print("q1 entropy for " + str(index) + " attribute: " + str(q1_entropy) )
-    print("q2 entropy for " + str(index) + " attribute: " + str(q2_entropy) )
-    print("q3 entropy for " + str(index) + " attribute: " + str(q3_entropy) )
-    print("q4 entropy for " + str(index) + " attribute: " + str(q4_entropy) )
+    #print("q1 entropy for " + str(index) + " attribute: " + str(q1_entropy) )
+    #print("q2 entropy for " + str(index) + " attribute: " + str(q2_entropy) )
+    #print("q3 entropy for " + str(index) + " attribute: " + str(q3_entropy) )
+    #print("q4 entropy for " + str(index) + " attribute: " + str(q4_entropy) )
 
     total_gain = set_entropy - ((q1_size*q1_entropy)+(q2_size*q2_entropy)+(q3_size*q3_entropy)+(q4_size*q4_entropy))/120
     return total_gain
 
 def divide_binary_data(sorted_attributes, file_name):
     #pdb.set_trace()
-
-    for i in range(0, len(sorted_attributes)):
-        zero_half = []
-        one_half = []
+    results_zero = []
+    results_ones = []
+    for attribute in sorted_attributes:
 
         zero_soils = [0, 0, 0, 0, 0, 0, 0]
         one_soils = [0, 0, 0, 0, 0, 0, 0]
@@ -61,20 +60,20 @@ def divide_binary_data(sorted_attributes, file_name):
         for line in f:
             values = line.split(',')
             values[-1] = values[-1].replace('\n','')
-
-            print(values[i + offset])
-
-            if (int(values[i + offset]) == 0):
-                zero_soils[int(values[-1]) -1] += 1
-            else:
-                one_soils[int(values[-1]) -1] += 1
+            values = values[offset:]
+            
+            for j in range(0, len(attribute)):
+                if (attribute[j] == 0):
+                    zero_soils[int(values[-1]) -1] += 1
+                else:
+                    one_soils[int(values[-1]) -1] += 1
         f.close()
-        #pdb.set_trace()
-        binary_dic = {
-            '0' : zero_soils,
-            '1' : one_soils
-        }
-        #print(zero_soils)
+
+        #binary_dic = {
+        #    '0' : zero_soils,
+        #    '1' : one_soils
+        #}
+        #results_zero.append(zero_soils)
         #print(one_soils)
 
 
@@ -149,7 +148,7 @@ def custom_main():
 
     if not (os.path.isfile('data/train_set.txt')):
         f = open('data/covtype.data', 'r')
-        train_samples = trainning_samples(1, 50)
+        train_samples = trainning_samples(1, 50) # TODO
         train_samples += trainning_samples(51, 100)
         train_samples += trainning_samples(101,150)
 
@@ -168,7 +167,7 @@ def custom_main():
         f.close()
         train_f.close()
 
-    p_i = [0,0,0,0,0,0,0]
+    p_i = [0, 0, 0, 0, 0, 0, 0]
     each_column = []
     for i in range(0,55):
         each_column.append([])
@@ -180,8 +179,9 @@ def custom_main():
         values[-1] = values[-1].replace('\n','')
         p_i[int(values[-1])-1] += 1 #forest classes
 
-        for i in range(0, len(values)):
+        for i in range(0, len(values) - 1):
             each_column[i].append(int(values[i]))
+        
     
     train_f.close()
 
@@ -191,7 +191,7 @@ def custom_main():
     #pdb.set_trace()
     
     set_entropy = entropy(p_i)
-    print(set_entropy)
+    #print(set_entropy)
     
     dic_quantiles, arr_quantiles = divide_continue_data(sorted_data[:10],'data/train_set.txt') #just quantitive attributes
 
