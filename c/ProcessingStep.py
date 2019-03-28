@@ -256,4 +256,3 @@ if __name__== "__main__":
 	global_tuples = [[0, 0.5, 0.75, 1, '1'],[0, 0.5, 0.75, 1, '2'],[1, 0.5, 0.75, 1, '2']]
 
 	tree = init_ID3_multiple(attributes, global_tuples, '1')
-	print(tree)
