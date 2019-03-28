@@ -4,6 +4,7 @@ attributes = []
 global_tuples = []
 min_level = 0
 max_level = 0
+empty = ''
 pipe = '|'
 binary = 'B'
 continuous = 'C'
@@ -68,7 +69,7 @@ def count_tuples(forests_set, tuples):
 
 def filter_continuous(forests, tuples, condition, branch, level):
 	new_tuples = []
-	if (branch == 1):
+	if (branch == 2):
 		for tuple in tuples:
 			if(tuple[level] < condition[level][branch]):
 				new_tuples.append(tuple)
@@ -91,18 +92,38 @@ def filter_binary(forests, tuples, condition, branch, level):
 	return new_tuples
 
 
-def print_single_tree(indentation, tree):
-	printable = indentation + tree.get_value_or_label()
+def print_single_tree(level, indentation, tree):
+	if (1 < level):
+		new_indentation = empty
+		for index in range(1, level):
+			new_indentation += '║ '
+		new_indentation += indentation[-2]
+		new_indentation += indentation[-1]
+		indentation = new_indentation
 
+	printable = indentation + tree.get_value_or_label()
 	print(printable)
-	indentation += pipe
+
 	childs = tree.get_childs()
 	if (childs != -1):
+		index = 1
 		for child in childs:
-			print_single_tree(indentation, childs[child])
+			if (index == len(childs)):
+				print_single_tree(level + 1, indentation + '╚═', childs[child])
+			else:
+				print_single_tree(level + 1, indentation + '╠═', childs[child])
+			index += 1
 
 
-def print_multiple_tree(indentation, tree):
+def print_multiple_tree(level, indentation, tree):
+	if (1 < level):
+		new_indentation = empty
+		for index in range(1, level):
+			new_indentation += '║ '
+		new_indentation += indentation[-2]
+		new_indentation += indentation[-1]
+		indentation = new_indentation
+
 	if (tree.is_leaf()):
 		node_value = tree.get_value_or_label()
 		if (node_value[0]):
@@ -113,11 +134,16 @@ def print_multiple_tree(indentation, tree):
 		printable = indentation + tree.get_value_or_label()
 
 	print(printable)
-	indentation += pipe
+
 	childs = tree.get_childs()
 	if (childs != -1):
+		index = 1
 		for child in childs:
-			print_multiple_tree(indentation, childs[child])
+			if (index == len(childs)):
+				print_multiple_tree(level + 1, indentation + '╚═', childs[child])
+			else:
+				print_multiple_tree(level + 1, indentation + '╠═', childs[child])
+			index += 1
 
 
 def ID3_single(level, tuples):
@@ -128,14 +154,14 @@ def ID3_single(level, tuples):
 		else:
 			node = Node(False, attributes[level][0])
 			childs = {}
+
 			if (attributes[level][1] == binary):
 				for branch in range(2, 4):
 					filtered_tuples = filter_binary(create_forests_set(), tuples, attributes, branch, level)
 					childs[attributes[level][branch]] = ID3_single(level + 1, filtered_tuples)
-
 			elif (attributes[level][1] == continuous):
-				for branch in range(1, 5):
-					filtered_tuples = filter(create_forests_set(), tuples, attributes, branch, level)
+				for branch in range(2, 6):
+					filtered_tuples = filter_continuous(create_forests_set(), tuples, attributes, branch, level)
 					childs[attributes[level][branch]] = ID3_single(level + 1, filtered_tuples)
 
 			node.set_childs(childs)
@@ -208,7 +234,7 @@ def init_ID3_single(Attributes, Global_Tuples):
 	global_tuples = Global_Tuples
 	max_level = len(Attributes)
 	tree = ID3_single(0, global_tuples)
-	print_single_tree(pipe, tree)
+	print_single_tree(0, empty, tree)
 	return tree
 
 
@@ -221,13 +247,13 @@ def init_ID3_multiple(Attributes, Global_Tuples, selected_forest):
 	global_tuples = Global_Tuples
 	max_level = len(Attributes)
 	tree = ID3_multiple(0, global_tuples, selected_forest)
-	print_multiple_tree(pipe, tree)
+	print_multiple_tree(0, empty, tree)
 	return tree
 
 
 if __name__== "__main__":
 	attributes = [['A', 'B', 0, 1],['B', 'C', 0.25, 0.5, 0.75, 1.0],['C', 'B', 0, 1],['D', 'C', 0.25, 0.50, 0.75, 1.0]]
-	global_tuples = [[0, 0.5, 0.75, 1, '1'],[1, 0.5, 0.75, 1, '2']]
+	global_tuples = [[0, 0.5, 0.75, 1, '1'],[0, 0.5, 0.75, 1, '2'],[1, 0.5, 0.75, 1, '2']]
 
-	tree = init_ID3_single(attributes, global_tuples)
+	tree = init_ID3_multiple(attributes, global_tuples, '1')
 	print(tree)
