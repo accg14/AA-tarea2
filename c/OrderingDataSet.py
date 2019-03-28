@@ -37,7 +37,7 @@ def order_data_set():
 
 def trainning_samples(percent):
   samples_id = []
-  for i in range(1,round(percent)):
+  for i in range(1,round(percent)+1):
     samples_id.append(i)
 
   return samples_id
@@ -56,24 +56,14 @@ def make_training_and_test_set(file, train_f, test_f, train_samples):
 
 def get_training_and_test_set():
   lengths = [211840, 283301, 35754, 2747, 9493, 17367, 20510]
+  soils_txt = ['soil_1.txt','soil_2.txt','soil_3.txt','soil_4.txt','soil_5.txt','soil_6.txt','soil_7.txt']
   train_f = open('training_set.txt','a')
-  test_f = open('test_set.txt', 'a')
+  test_f = open('testing_set.txt', 'a')
 
   train_samples = []
-  train_samples = trainning_samples(lengths[0] * 0.8)
-  make_training_and_test_set('soil_1.txt', train_f, test_f, train_samples)
-  train_samples = trainning_samples(lengths[1] * 0.8)
-  make_training_and_test_set('soil_2.txt', train_f, test_f, train_samples)
-  train_samples = trainning_samples(lengths[2] * 0.8)
-  make_training_and_test_set('soil_3.txt', train_f, test_f, train_samples)
-  train_samples = trainning_samples(lengths[3] * 0.8)
-  make_training_and_test_set('soil_4.txt', train_f, test_f, train_samples)
-  train_samples = trainning_samples(lengths[4] * 0.8)
-  make_training_and_test_set('soil_5.txt', train_f, test_f, train_samples)
-  train_samples = trainning_samples(lengths[5] * 0.8)
-  make_training_and_test_set('soil_6.txt', train_f, test_f, train_samples)
-  train_samples = trainning_samples(lengths[6] * 0.8)
-  make_training_and_test_set('soil_7.txt', train_f, test_f, train_samples)
+  for i in range(0, len(lengths)):
+    train_samples = trainning_samples(lengths[i] * 0.8)
+    make_training_and_test_set(soils_txt[i], train_f, test_f, train_samples)
 
   train_f.close()
   test_f.close()
