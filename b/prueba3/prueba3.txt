@@ -1,0 +1,5 @@
+iris_setosa_result [9, 20, 0, 1]
+iris_versicolor_result [9, 18, 2, 1]
+iris_virginica_result [9, 19, 1, 1]
+[28, 2]
+
