@@ -26,11 +26,11 @@ if __name__== "__main__":
 	iris_virginica_tree = ProcessingStep.init_ID3(quantiles, train_tuples, iris_virginica)
 	test_tuples = PreProcessingStep.data_order(attributes_order, test_set_file)
 	iris_virginica_result = PostProcessingStep.verify_tree(iris_virginica_tree, test_tuples, iris_virginica)
-	
+
 	print('iris_setosa_result', str(iris_setosa_result))
 	print('iris_versicolor_result', str(iris_versicolor_result))
 	print('iris_virginica_result', str(iris_virginica_result))
 
-	#forest = [['Iris-setosa',iris_setosa_tree],['Iris-versicolor',iris_versicolor_tree], ['Iris-virginica',iris_virginica_tree]]
-	#cluster_work = PostProcessingStep.measure_tree_cluster(forest, test_tuples)
-	#print(cluster_work)
+	forest = [['Iris-setosa',iris_setosa_tree],['Iris-versicolor',iris_versicolor_tree], ['Iris-virginica',iris_virginica_tree]]
+	cluster_work = PostProcessingStep.measure_tree_cluster(forest, test_tuples)
+	print(cluster_work)
