@@ -1,5 +1,4 @@
-import PreProcessingStep, ProcessingStep, PostProcessingStep
-import pdb
+import PreProcessingStep, Processing, PostProcessingStep
 
 train_set_file = 'train_set.txt'
 test_set_file = 'test_set.txt'
@@ -11,19 +10,19 @@ iris_virginica = 'Iris-virginica'
 if __name__== "__main__":
 	attributes_order, quantiles = PreProcessingStep.custom_main(iris_setosa)
 	train_tuples = PreProcessingStep.data_order(attributes_order, train_set_file)
-	iris_setosa_tree = ProcessingStep.init_ID3(quantiles, train_tuples, iris_setosa)
+	iris_setosa_tree = Processing.init_ID3(quantiles, train_tuples, iris_setosa)
 	test_tuples = PreProcessingStep.data_order(attributes_order, test_set_file)
 	iris_setosa_result = PostProcessingStep.verify_tree(iris_setosa_tree, test_tuples, iris_setosa)
 
 	attributes_order, quantiles = PreProcessingStep.custom_main(iris_versicolor)
 	train_tuples = PreProcessingStep.data_order(attributes_order, train_set_file)
-	iris_versicolor_tree = ProcessingStep.init_ID3(quantiles, train_tuples, iris_versicolor)
+	iris_versicolor_tree = Processing.init_ID3(quantiles, train_tuples, iris_versicolor)
 	test_tuples = PreProcessingStep.data_order(attributes_order, test_set_file)
 	iris_versicolor_result = PostProcessingStep.verify_tree(iris_versicolor_tree, test_tuples, iris_versicolor)
 
 	attributes_order, quantiles = PreProcessingStep.custom_main(iris_virginica)
 	train_tuples = PreProcessingStep.data_order(attributes_order, train_set_file)
-	iris_virginica_tree = ProcessingStep.init_ID3(quantiles, train_tuples, iris_virginica)
+	iris_virginica_tree = Processing.init_ID3(quantiles, train_tuples, iris_virginica)
 	test_tuples = PreProcessingStep.data_order(attributes_order, test_set_file)
 	iris_virginica_result = PostProcessingStep.verify_tree(iris_virginica_tree, test_tuples, iris_virginica)
 	
