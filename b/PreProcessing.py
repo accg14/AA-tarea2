@@ -1,10 +1,9 @@
-import numpy, pdb, random, os
+import numpy, random, os
 
 attributes_id = ['sepal_length', 'sepal_width', 'petal_length', 'petal_width']
 target_class = ''
 
 def entropy(entry_values):
-    #pdb.set_trace()
     sample_size = len(entry_values)
     if sample_size == 0:
         return sample_size
@@ -148,8 +147,6 @@ def custom_main(class_id):
         f.close()
         train_f.close()
 
-    
-
     p_i = [0,0]
     each_column = [[],[],[],[]]
 
@@ -158,7 +155,6 @@ def custom_main(class_id):
     for line in train_f:
         values = line.split(',')
         values[len(values)-1] = values[len(values)-1].replace('\n','')
-        #pdb.set_trace()
         if (values[4] == target_class):
             p_i[0] += 1
         else:
