@@ -4,7 +4,7 @@ def verify_tree(tree, tuples, selected_flower):
 	#[True, False, Should be True, Should be False]
 	result = [0, 0, 0, 0]
 	for tuple in tuples:
-		leaf_value = ProcessingStep.get_leaf_value(tree, tuple)
+		leaf_value = Processing.get_leaf_value(tree, tuple)
 		if (leaf_value):
 			if (selected_flower == tuple[-1]):
 				result[0] += 1
