@@ -35,10 +35,11 @@ def gain(set_entropy, dic, index):
     q4_size = len(q4_values)
     q4_entropy = entropy(dic[index].get('q4')[1])
 
-    print("q1 entropy for " + str(index) + "attribute: " + str(q1_entropy) )
-    print("q2 entropy for " + str(index) + "attribute: " + str(q2_entropy) )
-    print("q3 entropy for " + str(index) + "attribute: " + str(q3_entropy) )
-    print("q4 entropy for " + str(index) + "attribute: " + str(q4_entropy) )
+    print("Q1 entropy for attribute " + str(index) + ": " + str(q1_entropy) )
+    print("Q2 entropy for attribute " + str(index) + ": " + str(q2_entropy) )
+    print("Q3 entropy for attribute " + str(index) + ": " + str(q3_entropy) )
+    print("Q4 entropy for attribute " + str(index) + ": " + str(q4_entropy) )
+    print()
 
     total_gain = set_entropy - ((q1_size*q1_entropy)+(q2_size*q2_entropy)+(q3_size*q3_entropy)+(q4_size*q4_entropy))/120
     return total_gain
@@ -171,7 +172,8 @@ def custom_main():
 
     dic_quantiles, arr_quantiles = divide_data(sorted_data,'train_set.txt')
     set_entropy = entropy(p_i)
-    print(set_entropy)
+    print("Set_entropy:", set_entropy)
+    print()
 
     gains = []
     fst_attr_gain = gain (set_entropy, dic_quantiles, 0)
@@ -182,7 +184,8 @@ def custom_main():
     gains.append(thr_attr_gain)
     fth_attr_gain = gain (set_entropy, dic_quantiles, 3)
     gains.append(fth_attr_gain)
-    print(gains)
+    print("Gains:", gains)
+    print()
 
     final_attr_ordered = []
     final_quantil_ordered = []

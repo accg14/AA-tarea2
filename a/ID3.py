@@ -1,10 +1,13 @@
-import sys
+import sys, colorama
 
 attributes = []
 global_tuples = []
 min_level = 0
 max_level = 0
-pipe = '|'
+empty = ''
+
+yellow = '\033[33m'
+reset = '\033[0m'
 
 
 class Node:
@@ -75,14 +78,40 @@ def filter(flowers, tuples, condition, branch, level):
 	return new_tuples
 
 
-def print_tree(indentation, tree):
-	printable = indentation + tree.get_label()
+def print_tree(tree, level, isLast, emptyTrace):
+	indentation = empty
+
+	if (min_level < level):
+		previousLevel = level - 1
+		for index in range(0, level):
+			if (index == previousLevel):
+				if (isLast):
+					indentation += '╚═'
+				else:
+					indentation += '╠═'
+			else:
+				if (emptyTrace[index]):
+					indentation += '  '
+				else:
+					indentation += '║ '
+	else:
+		print("Tree")
+		print("----")
+
+	if (tree.is_leaf()):
+		printable = indentation + tree.get_label()
+	else:
+		printable = indentation + yellow + tree.get_label() + reset
+
 	print(printable)
-	indentation += pipe
+
 	childs = tree.get_childs()
 	if (childs != -1):
+		index = 1
 		for child in childs:
-			print_tree(indentation, childs[child])
+			emptyTrace[level] = (index == len(childs))
+			print_tree(childs[child], level + 1, emptyTrace[level], emptyTrace)
+			index += 1
 
 
 def ID3(level, tuples):
@@ -126,7 +155,7 @@ def cover_tree(tree, tuple):
 				return cover_tree(childs[child], tuple[1:])
 
 
-def init_ID3(Attributes, Global_Tuples):
+def init(Attributes, Global_Tuples):
 	global attributes
 	global global_tuples
 	global max_level
@@ -135,5 +164,6 @@ def init_ID3(Attributes, Global_Tuples):
 	global_tuples = Global_Tuples
 	max_level = len(Attributes)
 	tree = ID3(0, global_tuples)
-	print_tree(pipe, tree)
+	colorama.init()
+	print_tree(tree, 0, True, {})
 	return tree
