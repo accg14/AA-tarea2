@@ -166,4 +166,5 @@ def init(Attributes, Global_Tuples):
 	tree = ID3(0, global_tuples)
 	colorama.init()
 	print_tree(tree, 0, True, {})
+	colorama.deinit()
 	return tree
