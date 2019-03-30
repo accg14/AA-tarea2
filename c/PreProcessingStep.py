@@ -148,8 +148,6 @@ def divide_continue_data(sorted_attributes, file_name):
             elif(float(values[i]) < q3):
                 third_forest[int(values[-1]) - 1] += 1
             else:
-                #if (int(values[-1]) > 7):
-                #pdb.set_trace()
                 fourth_forest[int(values[-1]) - 1] += 1
         f.close()
 
@@ -162,6 +160,55 @@ def divide_continue_data(sorted_attributes, file_name):
 
         main_return.append(dic)
     return main_return, quantils_array
+
+def compute_cont_attr(sorted_data, set_entropy):
+    dic_quantiles, arr_quantiles = divide_continue_data(sorted_data,'training_set.txt') #just quantitive attributes
+
+    cont_gains = []
+    for i in range(0,len(dic_quantiles)):
+        cont_gains.append(gain(set_entropy, dic_quantiles, i, 'continue'))
+
+    cont_attr_ordered = []
+    cont_quantil_ordered = []
+    for i in cont_gains:
+        cont_quantil_ordered.append(arr_quantiles[cont_gains.index(max(cont_gains))])
+        cont_attr_ordered.append([cont_gains.index(max(cont_gains)), max(cont_gains)])
+        cont_gains[cont_gains.index(max(cont_gains))] = -1
+
+    return cont_attr_ordered, cont_quantil_ordered
+
+def compute_disc_attr(sorted_data, set_entropy):
+    loaded_file = []
+    f = open('training_set.txt', 'r')
+    for line in f:
+        values = line.split(',')
+        loaded_file.append(values)
+    f.close()
+
+    stop_values = [17, 25, 33, 41, 49]
+    thread_pool = []
+    global disc_attribute_id
+    disc_attribute_id_cp = disc_attribute_id.copy()
+   
+    for i in range(10, len(sorted_data)):
+        th = threading.Thread(target=divide_binary_data, args = (sorted_data[i], loaded_file, disc_attribute_id_cp[0]))
+        disc_attribute_id_cp = disc_attribute_id_cp[1:]
+        thread_pool.append(th)
+        th.start()
+        if (i in stop_values):
+            for th in thread_pool:
+                th.join()
+            thread_pool = []
+    for th in thread_pool:
+        th.join()
+
+    disc_gain = []
+    for attribute in arr_binary:
+        for k in attribute:
+            disc_gain.append([get_column_attr(k),gain(set_entropy, attribute, k, 'discrete')])
+    sorted_disc_gain = sorted(disc_gain, key = itemgetter(1), reverse = True)
+
+    return sorted_disc_gain
 
 
 def custom_main():
@@ -190,6 +237,9 @@ def custom_main():
     set_entropy = entropy(p_i)
     print("entropia calculada")
 
+    cont_gain, cont_quantil = compute_cont_attr(sorted_data[:10], set_entropy)
+
+    '''
     dic_quantiles, arr_quantiles = divide_continue_data(sorted_data[:10],'training_set.txt') #just quantitive attributes
 
     continue_gains = []
@@ -202,11 +252,14 @@ def custom_main():
         continue_quantil_ordered.append(arr_quantiles[continue_gains.index(max(continue_gains))])
         continue_attr_ordered.append([continue_gains.index(max(continue_gains)), max(continue_gains)])
         continue_gains[continue_gains.index(max(continue_gains))] = -1
-    
+    '''
     print('atributos continuos ok')
 
+    disc_gain = compute_disc_attr(sorted_data, set_entropy)
+
+    '''
     loaded_file = []
-    f = open('training_set.txt', 'r')
+    f = open('train_set.txt', 'r')
     for line in f:
         values = line.split(',')
         loaded_file.append(values)
@@ -234,27 +287,25 @@ def custom_main():
         for k in attribute:
             disc_gain.append([get_column_attr(k),gain(set_entropy, attribute, k, 'discrete')])
     sorted_disc_gain = sorted(disc_gain, key = itemgetter(1), reverse = True)
+    '''
 
-    all_attr = sorted_disc_gain + continue_attr_ordered
-
-    sorted_all_attr = sorted(all_attr, key = itemgetter(1), reverse = True)
-    
-    process_result = []
-    
-    tmp = []
-
-    for attr in sorted_all_attr:
-        tmp.append(attr[0])
+    all_gain = sorted(disc_gain + cont_gain, key = itemgetter(1), reverse = True)
+  
+    preproc_result = []
+    attr_order = []
+    for attr in all_gain:
+        attr_order.append(attr[0])
         if (attr[0] < 10):
-            attr_info = [continue_quantil_ordered[0][0], 'C']
+            attr_info = [cont_quantil[0][0], 'C']
             for i in range(1,5):
-                attr_info.append(continue_quantil_ordered[0][i])
-            continue_quantil_ordered = continue_quantil_ordered[1:]
+                attr_info.append(cont_quantil[0][i])
+            cont_quantil = cont_quantil[1:]
         else:
             label = disc_attribute_id[attr[0] - offset]
             attr_info = [label, 'B', 0, 1]
-        process_result.append(attr_info)
-
+        preproc_result.append(attr_info)
+    print(preproc_result)
+    print(attr_order)
     pdb.set_trace()  
 
 
