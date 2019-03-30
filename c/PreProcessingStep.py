@@ -32,7 +32,7 @@ def entropy(entry_values):
     ent = 0
     for p_i in pi:
         if p_i > 0:
-            ent += (-p_i)*numpy.log2(p_i)
+            ent += (-p_i)*numpy.log2(p_i) 
     if ent > 1:
         return 1
     else:
@@ -60,12 +60,11 @@ def gain(set_entropy, dic, index, type_attr):
         #print("q2 entropy for " + str(index) + " attribute: " + str(q2_entropy) )
         #print("q3 entropy for " + str(index) + " attribute: " + str(q3_entropy) )
         #print("q4 entropy for " + str(index) + " attribute: " + str(q4_entropy) )
-
+        #pdb.set_trace()
         total_gain = set_entropy - ((q1_size*q1_entropy)+(q2_size*q2_entropy)+(q3_size*q3_entropy)+(q4_size*q4_entropy))/train_set_size
         return total_gain
     else:
         k = index
-        #pdb.set_trace()
         zero_size = sum(dic.get(k).get('0'))
         zero_entropy = entropy(dic.get(k).get('0'))
 
@@ -232,63 +231,10 @@ def custom_main():
     for i in range(0,10):
         sorted_data.append(sorted(each_column[i]))
     sorted_data.extend(each_column[10:])
-    print("data ordenada")
-
-    set_entropy = entropy(p_i)
-    print("entropia calculada")
-
-    cont_gain, cont_quantil = compute_cont_attr(sorted_data[:10], set_entropy)
-
-    '''
-    dic_quantiles, arr_quantiles = divide_continue_data(sorted_data[:10],'training_set.txt') #just quantitive attributes
-
-    continue_gains = []
-    for i in range(0,len(dic_quantiles)):
-        continue_gains.append(gain(set_entropy, dic_quantiles, i, 'continue'))
-
-    continue_attr_ordered = []
-    continue_quantil_ordered = []
-    for i in continue_gains:
-        continue_quantil_ordered.append(arr_quantiles[continue_gains.index(max(continue_gains))])
-        continue_attr_ordered.append([continue_gains.index(max(continue_gains)), max(continue_gains)])
-        continue_gains[continue_gains.index(max(continue_gains))] = -1
-    '''
-    print('atributos continuos ok')
-
-    disc_gain = compute_disc_attr(sorted_data, set_entropy)
-
-    '''
-    loaded_file = []
-    f = open('train_set.txt', 'r')
-    for line in f:
-        values = line.split(',')
-        loaded_file.append(values)
-    f.close()
-
     
-    stop_values = [17, 25, 33, 41, 49]
-    thread_pool = []
-    global disc_attribute_id
-    disc_attribute_id_cp = disc_attribute_id.copy()
-    for i in range(10, len(sorted_data)):
-        th = threading.Thread(target=divide_binary_data, args = (sorted_data[i], loaded_file, disc_attribute_id_cp[0]))
-        disc_attribute_id_cp = disc_attribute_id_cp[1:]
-        thread_pool.append(th)
-        th.start()
-        if (i in stop_values):
-            for th in thread_pool:
-                th.join()
-                thread_pool = []
-    for th in thread_pool:
-        th.join()
-
-    disc_gain = []
-    for attribute in arr_binary:
-        for k in attribute:
-            disc_gain.append([get_column_attr(k),gain(set_entropy, attribute, k, 'discrete')])
-    sorted_disc_gain = sorted(disc_gain, key = itemgetter(1), reverse = True)
-    '''
-
+    set_entropy = entropy(p_i)
+    cont_gain, cont_quantil = compute_cont_attr(sorted_data[:10], set_entropy)
+    disc_gain = compute_disc_attr(sorted_data, set_entropy)
     all_gain = sorted(disc_gain + cont_gain, key = itemgetter(1), reverse = True)
   
     preproc_result = []
@@ -304,11 +250,8 @@ def custom_main():
             label = disc_attribute_id[attr[0] - offset]
             attr_info = [label, 'B', 0, 1]
         preproc_result.append(attr_info)
-    print(preproc_result)
-    print(attr_order)
-    pdb.set_trace()  
 
-
+    return attr_order, preproc_result
     
 def data_order(attributes_order, file_name):
     file = open(file_name, 'r')
