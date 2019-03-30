@@ -33,6 +33,6 @@ if __name__== "__main__":
 	print('iris_versicolor_result', str(iris_versicolor_result))
 	print('iris_virginica_result', str(iris_virginica_result))
 
-	forest = [['Iris-setosa',iris_setosa_tree],['Iris-versicolor',iris_versicolor_tree], ['Iris-virginica',iris_virginica_tree]]
+	forest = [['Iris-setosa', iris_setosa_tree],['Iris-versicolor', iris_versicolor_tree], ['Iris-virginica', iris_virginica_tree]]
 	cluster_work = PostProcessing.measure_tree_cluster(forest, test_tuples)
 	print(cluster_work)

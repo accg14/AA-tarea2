@@ -124,6 +124,10 @@ def print_tree(tree, level, isLast, emptyTrace):
 			index += 1
 
 
+def print_matrix():
+	s = 5
+
+
 def ID3(level, tuples, selected_flower):
 	if (level < max_level and tuples):
 		is_unique_flower, flower = verify_uniqueness(create_flowers_set(), tuples)
