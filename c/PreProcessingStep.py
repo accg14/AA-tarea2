@@ -1,12 +1,28 @@
-import numpy, pdb, random, os
+import numpy, pdb, random, os, threading, asyncio
+from operator import itemgetter
 
 cont_attributes_id = ['elevation', 'aspect', 'slope', 'horizontal_distance_hydrology', 'vertical_distance_hydrology', 'horizontal_dist_roadways', 'hillshade_9am','hillshade_noon' , 'hillshade_3pm', 'horizontal_dist_f_points']
-train_tuples_per_class = 66400
-offset = 10
+wa_id = ['wa_0', 'wa_1', 'wa_2', 'wa_3']
+st_id_first = ['st_0', 'st_1', 'st_2', 'st_3', 'st_4', 'st_5', 'st_6', 'st_7', 'st_8', 'st_9', 'st_10']
+st_id_second = ['st_11', 'st_12', 'st_13', 'st_14', 'st_15', 'st_16', 'st_17', 'st_18', 'st_19', 'st_20', 'st_21']
+st_id_third = ['st_22', 'st_23', 'st_24', 'st_25', 'st_26', 'st_27', 'st_28', 'st_29', 'st_30', 'st_31', 'st_32']
+st_id_fourth = ['st_33', 'st_34', 'st_35', 'st_36', 'st_37', 'st_38', 'st_39', 'st_40', 'st_41', 'st_42', 'st_43']
 
+disc_attribute_id = wa_id + st_id_first + st_id_second + st_id_third + st_id_fourth
+
+train_set_size = 464810
+offset = 10
+mutex = asyncio.Semaphore()
+arr_binary = []
+
+def get_column_attr(attr_name):
+    attr_code = attr_name.split('_')
+    if (attr_code[0] == 'wa'):
+        return (int(attr_code[1]) + 10)
+    else:
+        return (int(attr_code[1]) + 14)
 
 def entropy(entry_values):
-    #pdb.set_trace()
     sample_size = len(entry_values)
     if sample_size == 0:
         return sample_size
@@ -16,71 +32,80 @@ def entropy(entry_values):
     ent = 0
     for p_i in pi:
         if p_i > 0:
-            ent += (-p_i)*numpy.log2(p_i)
+            ent += (-p_i)*numpy.log2(p_i) 
     if ent > 1:
         return 1
     else:
         return ent
 
-def continue_gain(set_entropy, dic, index):
-    q1_values = dic[index].get('q1')[0]
-    q1_size = len(q1_values)
-    q1_entropy = entropy(dic[index].get('q1')[1])
+def gain(set_entropy, dic, index, type_attr):
+    if type_attr == 'continue':
+        q1_values = dic[index].get('q1')[0]
+        q1_size = len(q1_values)
+        q1_entropy = entropy(dic[index].get('q1')[1])
 
-    q2_values = dic[index].get('q2')[0]
-    q2_size = len(q2_values)
-    q2_entropy = entropy(dic[index].get('q2')[1])
+        q2_values = dic[index].get('q2')[0]
+        q2_size = len(q2_values)
+        q2_entropy = entropy(dic[index].get('q2')[1])
 
-    q3_values = dic[index].get('q3')[0]
-    q3_size = len(q3_values)
-    q3_entropy = entropy(dic[index].get('q3')[1])
+        q3_values = dic[index].get('q3')[0]
+        q3_size = len(q3_values)
+        q3_entropy = entropy(dic[index].get('q3')[1])
 
-    q4_values = dic[index].get('q4')[0]
-    q4_size = len(q4_values)
-    q4_entropy = entropy(dic[index].get('q4')[1])
+        q4_values = dic[index].get('q4')[0]
+        q4_size = len(q4_values)
+        q4_entropy = entropy(dic[index].get('q4')[1])
 
-    #print("q1 entropy for " + str(index) + " attribute: " + str(q1_entropy) )
-    #print("q2 entropy for " + str(index) + " attribute: " + str(q2_entropy) )
-    #print("q3 entropy for " + str(index) + " attribute: " + str(q3_entropy) )
-    #print("q4 entropy for " + str(index) + " attribute: " + str(q4_entropy) )
+        #print("q1 entropy for " + str(index) + " attribute: " + str(q1_entropy) )
+        #print("q2 entropy for " + str(index) + " attribute: " + str(q2_entropy) )
+        #print("q3 entropy for " + str(index) + " attribute: " + str(q3_entropy) )
+        #print("q4 entropy for " + str(index) + " attribute: " + str(q4_entropy) )
+        #pdb.set_trace()
+        total_gain = set_entropy - ((q1_size*q1_entropy)+(q2_size*q2_entropy)+(q3_size*q3_entropy)+(q4_size*q4_entropy))/train_set_size
+        return total_gain
+    else:
+        k = index
+        zero_size = sum(dic.get(k).get('0'))
+        zero_entropy = entropy(dic.get(k).get('0'))
 
-    total_gain = set_entropy - ((q1_size*q1_entropy)+(q2_size*q2_entropy)+(q3_size*q3_entropy)+(q4_size*q4_entropy))/120
-    return total_gain
+        one_size = sum(dic.get(k).get('1'))
+        one_entropy = entropy(dic.get(k).get('1'))
 
-def divide_binary_data(sorted_attributes, file_name):
-    #pdb.set_trace()
-    results_zero = []
-    results_ones = []
-    for attribute in sorted_attributes:
+        total_gain = set_entropy - ((one_size*one_entropy)+(zero_size*zero_entropy))/train_set_size
+        return total_gain
 
-        zero_soils = [0, 0, 0, 0, 0, 0, 0]
-        one_soils = [0, 0, 0, 0, 0, 0, 0]
+def divide_binary_data(attribute, loaded_file, attr_tag):
+    zero_forest = [0, 0, 0, 0, 0, 0, 0]
+    one_forest = [0, 0, 0, 0, 0, 0, 0]
+    
+    j = 0
+    for tuple in loaded_file:
+        tuple[-1] = tuple[-1].replace('\n','')
+        #tuple = tuple[offset:]
 
-        f = open(file_name, 'r')
-        for line in f:
-            values = line.split(',')
-            values[-1] = values[-1].replace('\n','')
-            values = values[offset:]
-            
-            for j in range(0, len(attribute)):
-                if (attribute[j] == 0):
-                    zero_soils[int(values[-1]) -1] += 1
-                else:
-                    one_soils[int(values[-1]) -1] += 1
-        f.close()
+        forest_class = int(tuple[-1]) - 1
+        
+        if (int(attribute[j]) == 0):
+            zero_forest[forest_class] += 1
+        else:
+            one_forest[forest_class] += 1  
+        j += 1
 
-        #binary_dic = {
-        #    '0' : zero_soils,
-        #    '1' : one_soils
-        #}
-        #results_zero.append(zero_soils)
-        #print(one_soils)
-
+    binary_dic = {
+        '0' : zero_forest,
+        '1' : one_forest
+    }
+    tagged_dic = {
+        attr_tag : binary_dic
+    }
+    mutex.acquire()
+    arr_binary.append(tagged_dic)
+    mutex.release()
 
 def divide_continue_data(sorted_attributes, file_name):
     main_return = []
     quantils_array = []
-    #pdb.set_trace()
+
     for i in range(0, len(sorted_attributes)):
         q1 = numpy.quantile(sorted_attributes[i], 0.25)
         q2 = numpy.quantile(sorted_attributes[i], 0.5)
@@ -95,19 +120,20 @@ def divide_continue_data(sorted_attributes, file_name):
         fourth_quarter = []
 
         for j in range(0,len(sorted_attributes[i])):
-            if (sorted_attributes[i][j] < q1):
+            #print(sorted_attributes[i][j])
+            if (int(sorted_attributes[i][j]) < q1):
                 first_quarter.append(sorted_attributes[i][j])
-            elif(sorted_attributes[i][j] < q2):
+            elif(int(sorted_attributes[i][j]) < q2):
                 second_quarter.append(sorted_attributes[i][j])
-            elif(sorted_attributes[i][j] < q3):
+            elif(int(sorted_attributes[i][j]) < q3):
                 third_quarter.append(sorted_attributes[i][j])
             else:
                 fourth_quarter.append(sorted_attributes[i][j])
 
-        first_soils = [0, 0, 0, 0, 0, 0, 0]
-        second_soils = [0, 0, 0, 0, 0, 0, 0]
-        third_soils = [0, 0, 0, 0, 0, 0, 0]
-        fourth_soils = [0, 0, 0, 0, 0, 0, 0]
+        first_forest = [0, 0, 0, 0, 0, 0, 0]
+        second_forest = [0, 0, 0, 0, 0, 0, 0]
+        third_forest = [0, 0, 0, 0, 0, 0, 0]
+        fourth_forest = [0, 0, 0, 0, 0, 0, 0]
 
         f = open(file_name, 'r')
         for line in f:
@@ -115,112 +141,118 @@ def divide_continue_data(sorted_attributes, file_name):
             values[len(values)-1] = values[len(values)-1].replace('\n','')
 
             if (float(values[i]) < q1):
-                first_soils[int(values[-1])] += 1
+                first_forest[int(values[-1]) -1] += 1
             elif(float(values[i]) < q2):
-                second_soils[int(values[-1])] += 1
+                second_forest[int(values[-1]) - 1] += 1
             elif(float(values[i]) < q3):
-               third_soils[int(values[-1])] += 1
+                third_forest[int(values[-1]) - 1] += 1
             else:
-               fourth_soils[int(values[-1])] += 1
+                fourth_forest[int(values[-1]) - 1] += 1
+        f.close()
 
         dic = {
-            'q1' : [first_quarter, first_soils],
-            'q2' : [second_quarter, second_soils],
-            'q3' : [third_quarter, third_soils],
-            'q4' : [fourth_quarter, fourth_soils]
+            'q1' : [first_quarter, first_forest],
+            'q2' : [second_quarter, second_forest],
+            'q3' : [third_quarter, third_forest],
+            'q4' : [fourth_quarter, fourth_forest]
         }
 
         main_return.append(dic)
-    #pdb.set_trace()
     return main_return, quantils_array
 
-def trainning_samples(a,b):
-    samples_id = []
-    global train_tuples_per_class
-    while len(samples_id) < train_tuples_per_class:
-        x = random.randint(a,b)
-        if not x in samples_id:
-                samples_id.append(x)
+def compute_cont_attr(sorted_data, set_entropy):
+    dic_quantiles, arr_quantiles = divide_continue_data(sorted_data,'training_set.txt') #just quantitive attributes
 
-    return samples_id
+    cont_gains = []
+    for i in range(0,len(dic_quantiles)):
+        cont_gains.append(gain(set_entropy, dic_quantiles, i, 'continue'))
+
+    cont_attr_ordered = []
+    cont_quantil_ordered = []
+    for i in cont_gains:
+        cont_quantil_ordered.append(arr_quantiles[cont_gains.index(max(cont_gains))])
+        cont_attr_ordered.append([cont_gains.index(max(cont_gains)), max(cont_gains)])
+        cont_gains[cont_gains.index(max(cont_gains))] = -1
+
+    return cont_attr_ordered, cont_quantil_ordered
+
+def compute_disc_attr(sorted_data, set_entropy):
+    loaded_file = []
+    f = open('training_set.txt', 'r')
+    for line in f:
+        values = line.split(',')
+        loaded_file.append(values)
+    f.close()
+
+    stop_values = [17, 25, 33, 41, 49]
+    thread_pool = []
+    global disc_attribute_id
+    disc_attribute_id_cp = disc_attribute_id.copy()
+   
+    for i in range(10, len(sorted_data)):
+        th = threading.Thread(target=divide_binary_data, args = (sorted_data[i], loaded_file, disc_attribute_id_cp[0]))
+        disc_attribute_id_cp = disc_attribute_id_cp[1:]
+        thread_pool.append(th)
+        th.start()
+        if (i in stop_values):
+            for th in thread_pool:
+                th.join()
+            thread_pool = []
+    for th in thread_pool:
+        th.join()
+
+    disc_gain = []
+    for attribute in arr_binary:
+        for k in attribute:
+            disc_gain.append([get_column_attr(k),gain(set_entropy, attribute, k, 'discrete')])
+    sorted_disc_gain = sorted(disc_gain, key = itemgetter(1), reverse = True)
+
+    return sorted_disc_gain
+
 
 def custom_main():
-
-    if not (os.path.isfile('data/train_set.txt')):
-        f = open('data/covtype.data', 'r')
-        train_samples = trainning_samples(1, 50) # TODO
-        train_samples += trainning_samples(51, 100)
-        train_samples += trainning_samples(101,150)
-
-        train_f = open('data/train_set.txt', 'a')
-        test_f = open('data/test_set.txt', 'a')
-
-        i  = 1
-        for line in f:
-            if i in train_samples:
-                train_f.write(line)
-            else:
-                test_f.write(line)
-            i += 1
-
-        test_f.close()
-        f.close()
-        train_f.close()
-
     p_i = [0, 0, 0, 0, 0, 0, 0]
     each_column = []
-    for i in range(0,55):
+
+    for i in range(0,54):
         each_column.append([])
-    
-    train_f = open('data/train_set.txt', 'r')
-    
+
+    train_f = open('training_set.txt', 'r')
     for line in train_f:
         values = line.split(',')
         values[-1] = values[-1].replace('\n','')
-        p_i[int(values[-1])-1] += 1 #forest classes
+        p_i[int(values[-1])-1] += 1
 
         for i in range(0, len(values) - 1):
             each_column[i].append(int(values[i]))
-        
-    
     train_f.close()
 
     sorted_data = []
-    for column in each_column:
-        sorted_data.append(sorted(column))
-    #pdb.set_trace()
+    for i in range(0,10):
+        sorted_data.append(sorted(each_column[i]))
+    sorted_data.extend(each_column[10:])
     
     set_entropy = entropy(p_i)
-    #print(set_entropy)
+    cont_gain, cont_quantil = compute_cont_attr(sorted_data[:10], set_entropy)
+    disc_gain = compute_disc_attr(sorted_data, set_entropy)
+    all_gain = sorted(disc_gain + cont_gain, key = itemgetter(1), reverse = True)
+  
+    preproc_result = []
+    attr_order = []
+    for attr in all_gain:
+        attr_order.append(attr[0])
+        if (attr[0] < 10):
+            attr_info = [cont_quantil[0][0], 'C']
+            for i in range(1,5):
+                attr_info.append(cont_quantil[0][i])
+            cont_quantil = cont_quantil[1:]
+        else:
+            label = disc_attribute_id[attr[0] - offset]
+            attr_info = [label, 'B', 0, 1]
+        preproc_result.append(attr_info)
+
+    return attr_order, preproc_result
     
-    dic_quantiles, arr_quantiles = divide_continue_data(sorted_data[:10],'data/train_set.txt') #just quantitive attributes
-
-    divide_binary_data(sorted_data[10:],'data/train_set.txt')  #just qualitative attributes
-    
-
-
-    
-    
-    #gains = []
-    #fst_attr_gain = continue_gain(set_entropy, dic_quantiles, 0)
-    #gains.append(fst_attr_gain)
-    #snd_attr_gain = continue_gain(set_entropy, dic_quantiles, 1)
-    #gains.append(snd_attr_gain)
-    #thr_attr_gain = continue_gain(set_entropy, dic_quantiles, 2)
-    #gains.append(thr_attr_gain)
-    #fth_attr_gain = continue_gain(set_entropy, dic_quantiles, 3)
-    #gains.append(fth_attr_gain)
-    #print(gains)
-
-    #final_attr_ordered = []
-    #final_quantil_ordered = []
-    #for i in gains:
-    #    final_quantil_ordered.append(arr_quantiles[gains.index(max(gains))])
-    #    final_attr_ordered.append(gains.index(max(gains)))
-    #    gains[gains.index(max(gains))] = -1
-
-    #return final_attr_ordered, final_quantil_ordered
-
 def data_order(attributes_order, file_name):
     file = open(file_name, 'r')
     ordered_data = []
