@@ -1,5 +1,4 @@
-import ID3
-import PreProcessing
+import PreProcessing, ID3
 
 train_set_file = 'train_set.txt'
 test_set_file = 'test_set.txt'

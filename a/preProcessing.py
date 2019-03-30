@@ -1,4 +1,4 @@
-import numpy, pdb, random
+import numpy, random
 
 attributes_id = ['sepal_length', 'sepal_width', 'petal_length', 'petal_width']
 

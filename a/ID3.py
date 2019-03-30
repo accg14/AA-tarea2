@@ -6,8 +6,8 @@ min_level = 0
 max_level = 0
 empty = ''
 
-yellow = '\033[33m'
-reset = '\033[0m'
+color_start = '\033[33m'
+color_end = '\033[0m'
 
 
 class Node:
@@ -101,7 +101,7 @@ def print_tree(tree, level, isLast, emptyTrace):
 	if (tree.is_leaf()):
 		printable = indentation + tree.get_label()
 	else:
-		printable = indentation + yellow + tree.get_label() + reset
+		printable = indentation + color_start + tree.get_label() + color_end
 
 	print(printable)
 
