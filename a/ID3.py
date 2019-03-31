@@ -1,4 +1,4 @@
-import sys, colorama
+import sys, colorama, pdb
 
 attributes = []
 global_tuples = []
@@ -135,24 +135,29 @@ def ID3(level, tuples):
 
 
 def verify_tree(tree, tuples):
+	dic_cant = {'Iris-setosa': 0, 'Iris-versicolor': 0, 'Iris-virginica': 0}
+	dic_type = {'Iris-setosa': dic_cant.copy(), 'Iris-versicolor': dic_cant.copy(), 'Iris-virginica': dic_cant.copy()}
 	result = [0, 0]
 	for tuple in tuples:
-		is_correct = cover_tree(tree, tuple)
+		is_correct = cover_tree(tree, tuple, dic_type)
 		if (is_correct):
 			result[0] += 1
 		else:
 			result[1] += 1
+	print(dic_type)
 	return result
 
-
-def cover_tree(tree, tuple):
+def cover_tree(tree, tuple, dic):
 	if (tree.is_leaf()):
+		#pdb.set_trace()
+		current = dic.get(tuple[-1]).get(tree.get_label()) + 1
+		dic[tuple[-1]][tree.get_label()] = current
 		return tuple[-1] == tree.get_label()
 	else:
 		childs = tree.get_childs()
 		for child in childs:
 			if (tuple[0] < child):
-				return cover_tree(childs[child], tuple[1:])
+				return cover_tree(childs[child], tuple[1:], dic)
 
 
 def init(Attributes, Global_Tuples):
