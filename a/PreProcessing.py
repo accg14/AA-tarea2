@@ -1,4 +1,4 @@
-import numpy, random
+import numpy, random, os
 
 attributes_id = ['sepal_length', 'sepal_width', 'petal_length', 'petal_width']
 
@@ -133,21 +133,21 @@ def custom_main():
     train_samples = trainning_samples(1, 50)
     train_samples += trainning_samples(51, 100)
     train_samples += trainning_samples(101,150)
+    if not (os.path.isfile('train_set.txt')):
+        f = open('data_set.txt', 'r')
+        train_f = open('train_set.txt', 'a')
+        test_f = open('test_set.txt', 'a')
+        i  = 1
+        for line in f:
+            if i in train_samples:
+                train_f.write(line)
+            else:
+                test_f.write(line)
+            i += 1
 
-    f = open('data_set.txt', 'r')
-    train_f = open('train_set.txt', 'a')
-    test_f = open('test_set.txt', 'a')
-    i  = 1
-    for line in f:
-        if i in train_samples:
-            train_f.write(line)
-        else:
-            test_f.write(line)
-        i += 1
-
-    test_f.close()
-    f.close()
-    train_f.close()
+        test_f.close()
+        f.close()
+        train_f.close()
 
     p_i = [0,0,0]
     each_column = [[],[],[],[]]
