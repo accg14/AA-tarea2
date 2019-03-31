@@ -118,7 +118,7 @@ def print_single_tree(tree, level, isLast, emptyTrace):
 	if (tree.is_leaf()):
 		printable = indentation + tree.get_value_or_label()
 	else:
-		printable = indentation + color_start + tree.get_value_or_label() + color_end
+		printable = indentation + color_start + tree.get_value_or_label()[0] + color_end
 
 	print(printable)
 
@@ -158,7 +158,7 @@ def print_multiple_tree(tree, level, isLast, emptyTrace):
 		else:
 			printable = indentation + 'False -> ' + str(node_value[1]) + '%'
 	else:
-		printable = indentation + color_start + tree.get_value_or_label() + color_end
+		printable = indentation + color_start + tree.get_value_or_label()[0] + color_end
 
 	print(printable)
 
@@ -177,7 +177,7 @@ def ID3_single(level, tuples):
 		if (is_unique_forest):
 			return Node(True, forest)
 		else:
-			node = Node(False, attributes[level][0])
+			node = Node(False, [attributes[level][0], attributes[level][1]])
 			childs = {}
 
 			if (attributes[level][1] == binary):
@@ -204,7 +204,7 @@ def ID3_multiple(level, tuples, selected_forest):
 		if (is_unique_forest):
 			return Node(True, [selected_forest == forest, 100.0])
 		else:
-			node = Node(False, attributes[level][0])
+			node = Node(False, [attributes[level][0], attributes[level][1]])
 			childs = {}
 
 			if (attributes[level][1] == binary):
@@ -242,12 +242,20 @@ def get_percent_value(forest, tuples, is_selected_forest):
 
 def get_leaf_value(tree, tuple):
 	if (tree.is_leaf()):
-		return tree.get_value_or_label()[0]
+		value = tree.get_value_or_label()
+		if (isinstance(value, str)):
+			return value
+		else:
+			return value[0]
 	else:
 		childs = tree.get_childs()
 		for child in childs:
-			if (tuple[0] < child):
-				return get_leaf_value(childs[child], tuple[1:])
+			if (tree.get_value_or_label()[1] == binary):
+				if (tuple[0] == child):
+					return get_leaf_value(childs[child], tuple[1:])
+			elif (tree.get_value_or_label()[1] == continuous):
+				if (tuple[0] < child):
+					return get_leaf_value(childs[child], tuple[1:])
 
 
 def init_ID3(Attributes, Global_Tuples, selected_forest):
@@ -261,18 +269,11 @@ def init_ID3(Attributes, Global_Tuples, selected_forest):
 	if (selected_forest == '-1'):
 		tree = ID3_single(0, global_tuples)
 		colorama.init()
-		print_single_tree(tree, 0, True, {})
+		#print_single_tree(tree, 0, True, {})
 		colorama.deinit()
 	else:
 		tree = ID3_multiple(0, global_tuples, selected_forest)
 		colorama.init()
-		print_multiple_tree(tree, 0, True, {})
+		#print_multiple_tree(tree, 0, True, {})
 		colorama.deinit()
 	return tree
-
-
-if __name__== "__main__":
-	attributes = [['A', 'B', 0, 1],['B', 'C', 0.25, 0.5, 0.75, 1.0],['C', 'B', 0, 1],['D', 'C', 0.25, 0.50, 0.75, 1.0]]
-	global_tuples = [[0, 0.5, 0.75, 1, '1'],[0, 0.5, 0.75, 1, '2'],[1, 0.5, 0.75, 1, '2']]
-
-	tree = init_ID3(attributes, global_tuples, '1')

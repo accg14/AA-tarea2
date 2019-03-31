@@ -1,17 +1,28 @@
 import Processing
 
-def verify_tree(tree, tuples, selected_flower):
+def verify_single_tree(tree, tuples):
+	# [Correct values, Incorrect values]
+	result = [0, 0]
+	for tuple in tuples:
+		leaf_value = Processing.get_leaf_value(tree, tuple)
+		if (leaf_value == tuple[-1]):
+			result[0] += 1
+		else:
+			result[1] += 1
+	return result
+
+def verify_multiple_tree(tree, tuples, selected_forest):
 	#[True, False, Should be True, Should be False]
 	result = [0, 0, 0, 0]
 	for tuple in tuples:
 		leaf_value = Processing.get_leaf_value(tree, tuple)
 		if (leaf_value):
-			if (selected_flower == tuple[-1]):
+			if (selected_forest == tuple[-1]):
 				result[0] += 1
 			else:
 				result[2] += 1
 		else:
-			if not (selected_flower == tuple[-1]):
+			if not (selected_forest == tuple[-1]):
 				result[1] += 1
 			else:
 				result[3] += 1
